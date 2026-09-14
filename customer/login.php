@@ -21,27 +21,39 @@ $pageTitle = 'Login';
 require __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <h1 class="h3 mb-4">Log In</h1>
-
-        <?php if ($error): ?>
-            <div class="alert alert-danger"><?= e($error) ?></div>
-        <?php endif; ?>
-
-        <form method="post">
-            <?= csrf_field() ?>
-            <div class="mb-3">
-                <label class="form-label">Username or Email</label>
-                <input type="text" name="identifier" class="form-control" required autofocus>
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-visual">
+            <div class="brand-mark">MarkMe</div>
+            <blockquote>"Every page you've loved deserves a bookmark that's just as personal."</blockquote>
+            <div class="auth-shapes">
+                <div class="bookmark-shape" style="width:60px;height:140px;background:var(--gold);"></div>
+                <div class="bookmark-shape" style="width:60px;height:160px;background:var(--accent);"></div>
+                <div class="bookmark-shape" style="width:60px;height:120px;background:var(--cream);"></div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Log In</button>
-        </form>
-        <p class="mt-3">No account yet? <a href="<?= BASE_URL ?>/customer/register.php">Register</a></p>
+        </div>
+        <div class="auth-form-panel">
+            <h1>Welcome back</h1>
+            <p class="subtitle">Log in to keep designing and tracking your bookmarks.</p>
+
+            <?php if ($error): ?>
+                <div class="alert alert-danger"><?= e($error) ?></div>
+            <?php endif; ?>
+
+            <form method="post">
+                <?= csrf_field() ?>
+                <div class="mb-3">
+                    <label class="form-label">Username or Email</label>
+                    <input type="text" name="identifier" class="form-control" required autofocus>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 btn-lg">Log In</button>
+            </form>
+            <p class="auth-switch">No account yet? <a href="<?= BASE_URL ?>/customer/register.php">Register</a></p>
+        </div>
     </div>
 </div>
 
