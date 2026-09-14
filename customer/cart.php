@@ -29,8 +29,11 @@ require __DIR__ . '/../includes/header.php';
 <h1 class="h3 mb-4">Shopping Cart</h1>
 
 <?php if (!$items): ?>
-    <p class="text-muted">Your cart is empty. <a href="<?= BASE_URL ?>/customer/index.php#products">Browse products</a>.</p>
+    <div class="card p-4 text-center">
+        <p class="text-muted mb-0">Your cart is empty. <a href="<?= BASE_URL ?>/customer/index.php#products">Browse products</a>.</p>
+    </div>
 <?php else: ?>
+    <div class="card p-3 p-md-4">
     <div class="table-responsive">
         <table class="table align-middle">
             <thead>
@@ -86,6 +89,7 @@ require __DIR__ . '/../includes/header.php';
     <div class="d-flex justify-content-end align-items-center gap-3">
         <span class="fs-5">Total: <strong><?= format_price($total) ?></strong></span>
         <a href="<?= BASE_URL ?>/customer/checkout.php" class="btn btn-primary btn-lg">Proceed to Checkout</a>
+    </div>
     </div>
 <?php endif; ?>
 

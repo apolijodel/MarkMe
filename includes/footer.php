@@ -12,7 +12,6 @@
                 <ul class="list-unstyled small d-flex flex-column gap-2">
                     <li><a href="<?= BASE_URL ?>/customer/index.php">Home</a></li>
                     <li><a href="<?= BASE_URL ?>/customer/index.php#story">Our Story</a></li>
-                    <li><a href="<?= BASE_URL ?>/customer/index.php#offer">What We Offer</a></li>
                     <li><a href="<?= BASE_URL ?>/customer/index.php#how-it-works">How It Works</a></li>
                     <li><a href="<?= BASE_URL ?>/customer/index.php#products">Shop</a></li>
                     <li><a href="<?= BASE_URL ?>/customer/index.php#contact">Contact</a></li>

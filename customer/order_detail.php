@@ -27,16 +27,15 @@ require __DIR__ . '/../includes/header.php';
 <h1 class="h3 mb-3">Order #<?= (int)$order['order_id'] ?></h1>
 <p class="text-muted">Placed on <?= e(date('M j, Y g:i A', strtotime($order['created_at']))) ?> &middot; Status: <strong><?= e($order['status']) ?></strong></p>
 
-<div class="row g-4 mb-4">
-    <div class="col-md-6">
-        <h2 class="h6">Delivery Information</h2>
-        <p class="mb-1"><?= e($order['full_name']) ?></p>
-        <p class="mb-1"><?= e($order['contact_number']) ?></p>
-        <p class="mb-1"><?= e($order['delivery_address']) ?></p>
-        <p class="mb-1">Payment: <?= e($order['payment_method']) ?></p>
-    </div>
+<div class="card p-3 p-md-4 mb-4">
+    <h2 class="h6">Delivery Information</h2>
+    <p class="mb-1"><?= e($order['full_name']) ?></p>
+    <p class="mb-1"><?= e($order['contact_number']) ?></p>
+    <p class="mb-1"><?= e($order['delivery_address']) ?></p>
+    <p class="mb-0">Payment: <?= e($order['payment_method']) ?></p>
 </div>
 
+<div class="card p-3 p-md-4">
 <table class="table">
     <thead><tr><th>Product</th><th>Customization</th><th>Unit Price</th><th>Qty</th><th>Line Total</th></tr></thead>
     <tbody>
@@ -58,5 +57,6 @@ require __DIR__ . '/../includes/header.php';
         <tr><th colspan="4" class="text-end">Total</th><th><?= format_price($order['total_amount']) ?></th></tr>
     </tfoot>
 </table>
+</div>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>

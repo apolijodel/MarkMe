@@ -8,7 +8,6 @@
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#story">Our Story</a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#offer">Offerings</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#how-it-works">How It Works</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#products">Shop</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#contact">Contact</a></li>

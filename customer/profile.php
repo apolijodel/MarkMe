@@ -85,6 +85,7 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="row g-4">
     <div class="col-md-6">
+        <div class="card p-3 p-md-4">
         <h2 class="h5 mb-3">Profile Information</h2>
         <?php if ($errors): ?>
             <div class="alert alert-danger">
@@ -116,9 +117,11 @@ require __DIR__ . '/../includes/header.php';
             </div>
             <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
+        </div>
     </div>
 
     <div class="col-md-6">
+        <div class="card p-3 p-md-4">
         <h2 class="h5 mb-3">Change Password</h2>
         <?php if ($pwErrors): ?>
             <div class="alert alert-danger">
@@ -142,6 +145,7 @@ require __DIR__ . '/../includes/header.php';
             </div>
             <button type="submit" class="btn btn-outline-primary">Change Password</button>
         </form>
+        </div>
     </div>
 </div>
 

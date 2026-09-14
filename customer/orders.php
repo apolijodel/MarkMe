@@ -21,8 +21,11 @@ require __DIR__ . '/../includes/header.php';
 <h1 class="h3 mb-4">My Orders</h1>
 
 <?php if (!$orders): ?>
-    <p class="text-muted">You haven't placed any orders yet.</p>
+    <div class="card p-4 text-center">
+        <p class="text-muted mb-0">You haven't placed any orders yet.</p>
+    </div>
 <?php else: ?>
+    <div class="card p-3 p-md-4">
     <div class="table-responsive">
         <table class="table align-middle">
             <thead><tr><th>Order #</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
@@ -38,6 +41,7 @@ require __DIR__ . '/../includes/header.php';
                 <?php endforeach; ?>
             </tbody>
         </table>
+    </div>
     </div>
 <?php endif; ?>
 

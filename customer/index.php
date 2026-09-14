@@ -77,57 +77,8 @@ require __DIR__ . '/../includes/header.php';
     </div>
 </section>
 
-<!-- What We Offer -->
-<section class="section section-alt" id="offer">
-    <div class="container">
-        <div class="section-title">
-            <div class="eyebrow">What We Offer</div>
-            <h2 class="mt-2">Everything you need to make it personal</h2>
-            <p>Four simple choices, one bookmark that's completely yours.</p>
-        </div>
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="9" height="9" rx="2"></rect><circle cx="16.5" cy="16.5" r="4.5"></circle></svg>
-                    </div>
-                    <h3>Choose a Shape</h3>
-                    <p>Rectangular, rounded, heart, or tasseled — pick the silhouette that fits your style.</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4.97 0-9-3.58-9-8s4.03-8 9-8 9 3.13 9 7c0 2.5-2 4-4.5 4H14a1.5 1.5 0 0 0-1 2.6c.3.3.5.7.5 1.15 0 .8-.7 1.25-1.5 1.25Z"></path><circle cx="7.5" cy="10.5" r="1"></circle><circle cx="11" cy="7.5" r="1"></circle><circle cx="15.5" cy="8.5" r="1"></circle></svg>
-                    </div>
-                    <h3>Pick a Design</h3>
-                    <p>Floral, minimalist, starry night, or plain kraft — a base look to build on.</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"></rect><path d="m3 14 4.5-4.5a2 2 0 0 1 2.8 0L15 14"></path><path d="m13 12 1.5-1.5a2 2 0 0 1 2.8 0L21 14"></path><path d="M12 21v-4"></path><path d="m9.5 19 2.5-2.5 2.5 2.5"></path></svg>
-                    </div>
-                    <h3>Upload Your Photo</h3>
-                    <p>Add a favorite picture — JPG, PNG, or WEBP, up to 2MB.</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"></path><path d="M13.5 6.5l3 3"></path></svg>
-                    </div>
-                    <h3>Add Personalized Text</h3>
-                    <p>A name, a quote, or a short dedication — make it unmistakably yours.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- How It Works -->
-<section class="section" id="how-it-works">
+<!-- How It Works (incl. what you can personalize) -->
+<section class="section section-alt" id="how-it-works">
     <div class="container">
         <div class="section-title">
             <div class="eyebrow">How It Works</div>
@@ -138,7 +89,13 @@ require __DIR__ . '/../includes/header.php';
                 <div class="step-card">
                     <div class="step-number">1</div>
                     <h3>Personalize</h3>
-                    <p>Choose a product, pick a shape and design, upload a photo, and add your text.</p>
+                    <p>Choose a product, then make it yours:</p>
+                    <ul class="personalize-list">
+                        <li>Shape — rectangular, rounded, heart, or tasseled</li>
+                        <li>Design — floral, minimalist, starry night, or plain kraft</li>
+                        <li>Photo — upload a favorite picture (JPG/PNG/WEBP, up to 2MB)</li>
+                        <li>Text — a name, quote, or short dedication</li>
+                    </ul>
                 </div>
             </div>
             <div class="col-md-4">
@@ -165,7 +122,6 @@ require __DIR__ . '/../includes/header.php';
         <div class="section-title">
             <div class="eyebrow">Products</div>
             <h2 class="mt-2">Shop Our Bookmarks</h2>
-            <p>Browse by category and find the one you'll make your own.</p>
         </div>
 
         <div class="category-pills">
@@ -186,22 +142,22 @@ require __DIR__ . '/../includes/header.php';
                                 <?php foreach ($slide as $product): ?>
                                     <?php $outOfStock = (int)$product['stock_quantity'] <= 0; ?>
                                     <div class="col">
-                                        <div class="card h-100 product-card <?= $outOfStock ? 'stock-badge-out' : '' ?>">
+                                        <a class="card h-100 product-card text-decoration-none <?= $outOfStock ? 'stock-badge-out' : '' ?>" href="<?= BASE_URL ?>/customer/product.php?id=<?= (int)$product['product_id'] ?>">
                                             <img src="<?= BASE_URL ?>/uploads/products/<?= e($product['image_path']) ?>" class="card-img-top" alt="<?= e($product['name']) ?>">
                                             <div class="card-body">
                                                 <span class="badge bg-secondary mb-2"><?= e($product['category_name']) ?></span>
                                                 <h3 class="h6 card-title"><?= e($product['name']) ?></h3>
-                                                <p class="card-text fw-semibold"><?= format_price($product['price']) ?></p>
-                                                <?php if ($outOfStock): ?>
-                                                    <span class="badge bg-danger">Out of Stock</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-success"><?= (int)$product['stock_quantity'] ?> in stock</span>
-                                                <?php endif; ?>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="fw-semibold"><?= format_price($product['price']) ?></span>
+                                                    <?php if ($outOfStock): ?>
+                                                        <span class="badge bg-danger">Out of Stock</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-success"><?= (int)$product['stock_quantity'] ?> in stock</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <span class="product-card-link">View Details &rarr;</span>
                                             </div>
-                                            <div class="card-footer bg-white border-0">
-                                                <a href="<?= BASE_URL ?>/customer/product.php?id=<?= (int)$product['product_id'] ?>" class="btn btn-outline-primary btn-sm w-100">View Details</a>
-                                            </div>
-                                        </div>
+                                        </a>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -244,7 +200,7 @@ require __DIR__ . '/../includes/header.php';
             <?php endif; ?>
             <form method="post" action="<?= BASE_URL ?>/customer/contact_submit.php">
                 <?= csrf_field() ?>
-                <div class="row g-3">
+                <div class="row g-2">
                     <div class="col-md-6">
                         <label class="form-label">Name</label>
                         <input type="text" name="name" class="form-control" value="<?= e($contactOld['name']) ?>" required>
@@ -255,10 +211,10 @@ require __DIR__ . '/../includes/header.php';
                     </div>
                     <div class="col-12">
                         <label class="form-label">Message</label>
-                        <textarea name="message" class="form-control" rows="4" required><?= e($contactOld['message']) ?></textarea>
+                        <textarea name="message" class="form-control" rows="3" required><?= e($contactOld['message']) ?></textarea>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">Send Message</button>
+                <button type="submit" class="btn btn-primary w-100 mt-3">Send Message</button>
             </form>
         </div>
     </div>

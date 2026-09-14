@@ -35,6 +35,7 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="row g-4">
     <div class="col-md-7">
+        <div class="card p-3 p-md-4">
         <h2 class="h5">Order Summary</h2>
         <table class="table">
             <thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr></thead>
@@ -59,9 +60,11 @@ require __DIR__ . '/../includes/header.php';
                 <tr><th colspan="3" class="text-end">Total</th><th><?= format_price($total) ?></th></tr>
             </tfoot>
         </table>
+        </div>
     </div>
 
     <div class="col-md-5">
+        <div class="card p-3 p-md-4">
         <h2 class="h5">Delivery & Payment</h2>
         <form method="post" action="<?= BASE_URL ?>/customer/place_order.php">
             <?= csrf_field() ?>
@@ -86,6 +89,7 @@ require __DIR__ . '/../includes/header.php';
             </div>
             <button type="submit" class="btn btn-primary w-100 btn-lg">Place Order</button>
         </form>
+        </div>
     </div>
 </div>
 
