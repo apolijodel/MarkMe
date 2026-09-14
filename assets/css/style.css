@@ -1,0 +1,60 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main.container {
+    flex: 1;
+}
+
+.product-card img,
+.option-thumb img {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    width: 100%;
+}
+
+.option-thumb {
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 0.375rem;
+    padding: 4px;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.option-thumb.selected {
+    border-color: var(--bs-primary);
+}
+
+.option-thumb input {
+    display: none;
+}
+
+.preview-stack {
+    position: relative;
+    background: #f8f9fa;
+    border: 1px dashed #ced4da;
+    border-radius: 0.5rem;
+    min-height: 320px;
+    padding: 1rem;
+}
+
+.preview-stack img {
+    max-width: 100%;
+    max-height: 140px;
+    display: block;
+    margin: 0 auto 0.5rem;
+}
+
+.stock-badge-out {
+    opacity: 0.6;
+}
+
+.sidebar .nav-link {
+    color: #212529;
+}
+
+.sidebar .nav-link.active {
+    color: var(--bs-primary);
+}
