@@ -1,9 +1,22 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
 
-$featured = db()->query(
-    'SELECT * FROM products ORDER BY created_at DESC LIMIT 3'
-)->fetchAll();
+$categories = db()->query('SELECT * FROM categories ORDER BY name')->fetchAll();
+
+$activeCategory = isset($_GET['category']) && $_GET['category'] !== '' ? (int)$_GET['category'] : null;
+
+$sql = 'SELECT p.*, c.name AS category_name FROM products p JOIN categories c ON c.category_id = p.category_id';
+$params = [];
+if ($activeCategory) {
+    $sql .= ' WHERE p.category_id = :cat';
+    $params['cat'] = $activeCategory;
+}
+$sql .= ' ORDER BY p.created_at DESC';
+
+$stmt = db()->prepare($sql);
+$stmt->execute($params);
+$products = $stmt->fetchAll();
+$productSlides = array_chunk($products, 3);
 
 $pageTitle = 'Home';
 $fullWidth = true;
@@ -20,7 +33,7 @@ require __DIR__ . '/../includes/header.php';
                 <p class="lead">Pick a shape, choose a design, upload your favorite photo, and add a
                     name or quote. MarkMe turns a simple bookmark into something worth keeping.</p>
                 <div class="d-flex flex-wrap gap-3 mt-2">
-                    <a href="<?= BASE_URL ?>/customer/catalog.php" class="btn btn-primary btn-lg">Shop Now</a>
+                    <a href="#products" class="btn btn-primary btn-lg">Shop Now</a>
                     <a href="#how-it-works" class="btn btn-outline-primary btn-lg">See How It Works</a>
                 </div>
             </div>
@@ -142,33 +155,71 @@ require __DIR__ . '/../includes/header.php';
     </div>
 </section>
 
-<!-- Featured Products -->
-<section class="section section-alt">
+<!-- Products -->
+<section class="section section-alt" id="products">
     <div class="container">
         <div class="section-title">
             <div class="eyebrow">Products</div>
-            <h2 class="mt-2">Featured Bookmarks</h2>
-            <p>A few favorites to get you started.</p>
+            <h2 class="mt-2">Shop Our Bookmarks</h2>
+            <p>Browse by category and find the one you'll make your own.</p>
         </div>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            <?php foreach ($featured as $product): ?>
-                <div class="col">
-                    <div class="card h-100 product-card">
-                        <img src="<?= BASE_URL ?>/uploads/products/<?= e($product['image_path']) ?>" class="card-img-top" alt="<?= e($product['name']) ?>">
-                        <div class="card-body">
-                            <h3 class="h6 card-title"><?= e($product['name']) ?></h3>
-                            <p class="card-text fw-semibold"><?= format_price($product['price']) ?></p>
-                        </div>
-                        <div class="card-footer bg-white border-0">
-                            <a href="<?= BASE_URL ?>/customer/product.php?id=<?= (int)$product['product_id'] ?>" class="btn btn-outline-primary btn-sm w-100">View</a>
-                        </div>
-                    </div>
-                </div>
+
+        <div class="category-pills">
+            <a href="<?= BASE_URL ?>/customer/index.php#products" class="pill <?= !$activeCategory ? 'active' : '' ?>">All</a>
+            <?php foreach ($categories as $cat): ?>
+                <a href="<?= BASE_URL ?>/customer/index.php?category=<?= (int)$cat['category_id'] ?>#products" class="pill <?= $activeCategory === (int)$cat['category_id'] ? 'active' : '' ?>"><?= e($cat['name']) ?></a>
             <?php endforeach; ?>
         </div>
-        <div class="text-center mt-4">
-            <a href="<?= BASE_URL ?>/customer/catalog.php" class="btn btn-outline-primary">Browse All Products</a>
-        </div>
+
+        <?php if (!$products): ?>
+            <p class="text-center text-muted">No products in this category yet.</p>
+        <?php else: ?>
+            <div id="productCarousel" class="carousel slide product-carousel" data-bs-ride="false">
+                <div class="carousel-inner">
+                    <?php foreach ($productSlides as $i => $slide): ?>
+                        <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
+                            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+                                <?php foreach ($slide as $product): ?>
+                                    <?php $outOfStock = (int)$product['stock_quantity'] <= 0; ?>
+                                    <div class="col">
+                                        <div class="card h-100 product-card <?= $outOfStock ? 'stock-badge-out' : '' ?>">
+                                            <img src="<?= BASE_URL ?>/uploads/products/<?= e($product['image_path']) ?>" class="card-img-top" alt="<?= e($product['name']) ?>">
+                                            <div class="card-body">
+                                                <span class="badge bg-secondary mb-2"><?= e($product['category_name']) ?></span>
+                                                <h3 class="h6 card-title"><?= e($product['name']) ?></h3>
+                                                <p class="card-text fw-semibold"><?= format_price($product['price']) ?></p>
+                                                <?php if ($outOfStock): ?>
+                                                    <span class="badge bg-danger">Out of Stock</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-success"><?= (int)$product['stock_quantity'] ?> in stock</span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="card-footer bg-white border-0">
+                                                <a href="<?= BASE_URL ?>/customer/product.php?id=<?= (int)$product['product_id'] ?>" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (count($productSlides) > 1): ?>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-arrow" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                        </span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-arrow" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                        </span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
     </div>
 </section>
 
@@ -178,7 +229,7 @@ require __DIR__ . '/../includes/header.php';
         <div class="cta-banner">
             <h2>Ready to design your own bookmark?</h2>
             <p class="mb-4">It only takes a minute to personalize one that's truly yours.</p>
-            <a href="<?= BASE_URL ?>/customer/catalog.php" class="btn btn-primary btn-lg">Start Designing</a>
+            <a href="#products" class="btn btn-primary btn-lg">Start Designing</a>
         </div>
     </div>
 </section>

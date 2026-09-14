@@ -29,7 +29,7 @@ require __DIR__ . '/../includes/header.php';
 <h1 class="h3 mb-4">Shopping Cart</h1>
 
 <?php if (!$items): ?>
-    <p class="text-muted">Your cart is empty. <a href="<?= BASE_URL ?>/customer/catalog.php">Browse products</a>.</p>
+    <p class="text-muted">Your cart is empty. <a href="<?= BASE_URL ?>/customer/index.php#products">Browse products</a>.</p>
 <?php else: ?>
     <div class="table-responsive">
         <table class="table align-middle">

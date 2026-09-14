@@ -26,7 +26,7 @@ require __DIR__ . '/../includes/header.php';
     <p class="text-muted">Payment Method: <?= e($order['payment_method']) ?> &middot; Status: <?= e($order['status']) ?></p>
     <div class="mt-4">
         <a href="<?= BASE_URL ?>/customer/order_detail.php?id=<?= (int)$order['order_id'] ?>" class="btn btn-primary">View Order Details</a>
-        <a href="<?= BASE_URL ?>/customer/catalog.php" class="btn btn-outline-secondary">Continue Shopping</a>
+        <a href="<?= BASE_URL ?>/customer/index.php#products" class="btn btn-outline-secondary">Continue Shopping</a>
     </div>
 </div>
 

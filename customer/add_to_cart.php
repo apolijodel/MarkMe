@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/upload.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('/customer/catalog.php');
+    redirect('/customer/index.php');
 }
 csrf_check();
 
@@ -17,7 +17,7 @@ $product = $stmt->fetch();
 
 if (!$product) {
     flash_set('error', 'Product not found.');
-    redirect('/customer/catalog.php');
+    redirect('/customer/index.php');
 }
 
 if ($quantity > (int)$product['stock_quantity']) {

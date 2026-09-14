@@ -7,7 +7,7 @@
         <div class="collapse navbar-collapse" id="navMain">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/catalog.php">Catalog</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#products">Shop</a></li>
             </ul>
             <ul class="navbar-nav align-items-lg-center">
                 <?php if (is_logged_in()): ?>

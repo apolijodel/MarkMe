@@ -11,7 +11,7 @@
                 <h6>Shop</h6>
                 <ul class="list-unstyled small d-flex flex-column gap-2">
                     <li><a href="<?= BASE_URL ?>/customer/index.php">Home</a></li>
-                    <li><a href="<?= BASE_URL ?>/customer/catalog.php">Catalog</a></li>
+                    <li><a href="<?= BASE_URL ?>/customer/index.php#products">Shop</a></li>
                 </ul>
             </div>
             <div class="col-6 col-md-3">
