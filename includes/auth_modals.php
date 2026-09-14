@@ -120,8 +120,8 @@ $here = current_path();
 
 <?php if ($reopenModal === 'login' || $reopenModal === 'register'): ?>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    var modalEl = document.getElementById('<?= $reopenModal === 'register' ? 'registerModal' : 'loginModal' ?>');
+document.addEventListener('DOMContentLoaded', () => {
+    const modalEl = document.getElementById('<?= $reopenModal === 'register' ? 'registerModal' : 'loginModal' ?>');
     if (modalEl && window.bootstrap) {
         new bootstrap.Modal(modalEl).show();
     }
