@@ -560,13 +560,20 @@ html { scroll-behavior: smooth; }
     scroll-margin-top: 90px;
 }
 
-/* Login/Register rendered as nav buttons, not links */
-.site-nav button.nav-link {
+/* Login/Register rendered as nav buttons, not links.
+   Excludes .btn-nav-register: its own rule sets a background pill and this
+   reset (higher specificity: element+2 classes vs 2 classes) would otherwise
+   silently win and erase it, leaving invisible white-on-white text. */
+.site-nav button.nav-link:not(.btn-nav-register) {
     background: none;
     border: 0;
     display: block;
     width: auto;
     text-align: left;
+}
+.site-nav button.btn-nav-register {
+    border: 0;
+    display: inline-block;
 }
 
 .sidebar .nav-link { color: #212529; }
