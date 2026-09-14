@@ -160,6 +160,17 @@ CREATE TABLE order_items (
     INDEX idx_order_items_product (product_id)
 ) ENGINE=InnoDB;
 
+-- ---------------------------------------------------------------------
+-- feedback_messages: contact-us / feedback submissions (open to guests)
+-- ---------------------------------------------------------------------
+CREATE TABLE feedback_messages (
+    feedback_id     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name            VARCHAR(150) NOT NULL,
+    email           VARCHAR(150) NOT NULL,
+    message         TEXT NOT NULL,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ---------------------------------------------------------------------

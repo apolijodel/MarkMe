@@ -7,7 +7,11 @@
         <div class="collapse navbar-collapse" id="navMain">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#story">Our Story</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#offer">Offerings</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#how-it-works">How It Works</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#products">Shop</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/index.php#contact">Contact</a></li>
             </ul>
             <ul class="navbar-nav align-items-lg-center">
                 <?php if (is_logged_in()): ?>
@@ -19,8 +23,8 @@
                     <?php endif; ?>
                     <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/logout.php">Logout (<?= e(current_user()['username']) ?>)</a></li>
                 <?php else: ?>
-                    <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/customer/login.php">Login</a></li>
-                    <li class="nav-item"><a class="nav-link btn-nav-register" href="<?= BASE_URL ?>/customer/register.php">Register</a></li>
+                    <li class="nav-item"><button type="button" class="nav-link btn btn-link" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button></li>
+                    <li class="nav-item"><button type="button" class="nav-link btn btn-link btn-nav-register" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button></li>
                 <?php endif; ?>
             </ul>
         </div>

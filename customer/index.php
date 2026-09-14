@@ -18,6 +18,10 @@ $stmt->execute($params);
 $products = $stmt->fetchAll();
 $productSlides = array_chunk($products, 3);
 
+$contactError = flash_get('contact_error');
+$contactSuccess = flash_get('contact_success');
+$contactOld = flash_get('contact_old') ?? ['name' => '', 'email' => '', 'message' => ''];
+
 $pageTitle = 'Home';
 $fullWidth = true;
 require __DIR__ . '/../includes/header.php';
@@ -49,7 +53,7 @@ require __DIR__ . '/../includes/header.php';
 </section>
 
 <!-- Our Story -->
-<section class="section">
+<section class="section" id="story">
     <div class="container">
         <div class="row align-items-center g-5">
             <div class="col-lg-5">
@@ -74,7 +78,7 @@ require __DIR__ . '/../includes/header.php';
 </section>
 
 <!-- What We Offer -->
-<section class="section section-alt">
+<section class="section section-alt" id="offer">
     <div class="container">
         <div class="section-title">
             <div class="eyebrow">What We Offer</div>
@@ -223,13 +227,39 @@ require __DIR__ . '/../includes/header.php';
     </div>
 </section>
 
-<!-- CTA -->
-<section class="section">
+<!-- Contact -->
+<section class="section section-alt" id="contact">
     <div class="container">
-        <div class="cta-banner">
-            <h2>Ready to design your own bookmark?</h2>
-            <p class="mb-4">It only takes a minute to personalize one that's truly yours.</p>
-            <a href="#products" class="btn btn-primary btn-lg">Start Designing</a>
+        <div class="section-title">
+            <div class="eyebrow">Get In Touch</div>
+            <h2 class="mt-2">Contact Us</h2>
+            <p>Questions about an order, a custom request, or just feedback? We'd love to hear it.</p>
+        </div>
+        <div class="contact-form-wrap">
+            <?php if ($contactSuccess): ?>
+                <div class="alert alert-success"><?= e($contactSuccess) ?></div>
+            <?php endif; ?>
+            <?php if ($contactError): ?>
+                <div class="alert alert-danger"><?= e($contactError) ?></div>
+            <?php endif; ?>
+            <form method="post" action="<?= BASE_URL ?>/customer/contact_submit.php">
+                <?= csrf_field() ?>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="name" class="form-control" value="<?= e($contactOld['name']) ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="<?= e($contactOld['email']) ?>" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Message</label>
+                        <textarea name="message" class="form-control" rows="4" required><?= e($contactOld['message']) ?></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">Send Message</button>
+            </form>
         </div>
     </div>
 </section>

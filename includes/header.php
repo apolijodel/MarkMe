@@ -2,6 +2,14 @@
 require_once __DIR__ . '/functions.php';
 $pageTitle = $pageTitle ?? 'MarkMe';
 $fullWidth = $fullWidth ?? false;
+
+// Prompt guests to log in once per session, the first time they land on the site.
+if (!is_logged_in() && empty($_SESSION['welcomed'])) {
+    $_SESSION['welcomed'] = true;
+    if (empty($_SESSION['flash']['reopen_modal'])) {
+        flash_set('reopen_modal', 'login');
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

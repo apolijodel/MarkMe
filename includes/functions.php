@@ -22,12 +22,12 @@ function format_price(float $amount): string
     return '₱' . number_format($amount, 2);
 }
 
-function flash_set(string $key, string $message): void
+function flash_set(string $key, mixed $message): void
 {
     $_SESSION['flash'][$key] = $message;
 }
 
-function flash_get(string $key): ?string
+function flash_get(string $key): mixed
 {
     if (!empty($_SESSION['flash'][$key])) {
         $message = $_SESSION['flash'][$key];
@@ -35,6 +35,26 @@ function flash_get(string $key): ?string
         return $message;
     }
     return null;
+}
+
+/** Current request path relative to BASE_URL, e.g. "/customer/product.php?id=3". */
+function current_path(): string
+{
+    $basePath = parse_url(BASE_URL, PHP_URL_PATH) ?? '';
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+    if ($basePath !== '' && str_starts_with($requestUri, $basePath)) {
+        $requestUri = substr($requestUri, strlen($basePath));
+    }
+    return $requestUri === '' ? '/' : $requestUri;
+}
+
+/** Only allow redirecting back to a local app path — never an absolute/external URL. */
+function safe_local_path(?string $path, string $default = '/customer/index.php'): string
+{
+    if (!$path || $path[0] !== '/' || str_starts_with($path, '//') || str_contains($path, '\\')) {
+        return $default;
+    }
+    return $path;
 }
 
 function csrf_token(): string

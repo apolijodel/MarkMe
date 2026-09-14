@@ -4,8 +4,10 @@ require_once __DIR__ . '/functions.php';
 function require_login(): void
 {
     if (!is_logged_in()) {
-        flash_set('error', 'Please log in to continue.');
-        redirect('/customer/login.php');
+        flash_set('login_error', 'Please log in to continue.');
+        flash_set('reopen_modal', 'login');
+        flash_set('login_return_to', safe_local_path(current_path()));
+        redirect('/customer/index.php');
     }
 }
 
