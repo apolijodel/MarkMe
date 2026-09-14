@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 $search = trim($_GET['q'] ?? '');
 $categoryId = isset($_GET['category']) && $_GET['category'] !== '' ? (int)$_GET['category'] : null;
@@ -37,7 +37,7 @@ $products = $stmt->fetchAll();
 $categories = db()->query('SELECT * FROM categories ORDER BY name')->fetchAll();
 
 $pageTitle = 'Catalog';
-require __DIR__ . '/includes/header.php';
+require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1 class="h3 mb-4">Product Catalog</h1>
@@ -90,11 +90,11 @@ require __DIR__ . '/includes/header.php';
                     <?php endif; ?>
                 </div>
                 <div class="card-footer bg-white border-0">
-                    <a href="<?= BASE_URL ?>/product.php?id=<?= (int)$product['product_id'] ?>" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+                    <a href="<?= BASE_URL ?>/customer/product.php?id=<?= (int)$product['product_id'] ?>" class="btn btn-outline-primary btn-sm w-100">View Details</a>
                 </div>
             </div>
         </div>
     <?php endforeach; ?>
 </div>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -5,7 +5,7 @@ function require_login(): void
 {
     if (!is_logged_in()) {
         flash_set('error', 'Please log in to continue.');
-        redirect('/login.php');
+        redirect('/customer/login.php');
     }
 }
 
@@ -20,7 +20,7 @@ function require_admin(): void
 function require_guest(): void
 {
     if (is_logged_in()) {
-        redirect(is_admin() ? '/admin/dashboard.php' : '/index.php');
+        redirect(is_admin() ? '/admin/dashboard.php' : '/customer/index.php');
     }
 }
 

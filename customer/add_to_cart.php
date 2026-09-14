@@ -1,10 +1,10 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/upload.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/upload.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('/catalog.php');
+    redirect('/customer/catalog.php');
 }
 csrf_check();
 
@@ -17,12 +17,12 @@ $product = $stmt->fetch();
 
 if (!$product) {
     flash_set('error', 'Product not found.');
-    redirect('/catalog.php');
+    redirect('/customer/catalog.php');
 }
 
 if ($quantity > (int)$product['stock_quantity']) {
     flash_set('error', 'Requested quantity exceeds available stock.');
-    redirect('/product.php?id=' . $productId);
+    redirect('/customer/product.php?id=' . $productId);
 }
 
 $shapeId = null;
@@ -40,7 +40,7 @@ if ($product['is_customizable']) {
             $customImagePath = handle_image_upload($_FILES['custom_image'], __DIR__ . '/uploads/customizations');
         } catch (RuntimeException $e) {
             flash_set('error', $e->getMessage());
-            redirect('/product.php?id=' . $productId);
+            redirect('/customer/product.php?id=' . $productId);
         }
     }
 }
@@ -62,4 +62,4 @@ $stmt->execute([
 ]);
 
 flash_set('success', 'Added to cart.');
-redirect('/cart.php');
+redirect('/customer/cart.php');

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
 $user = current_user();
@@ -19,7 +19,7 @@ $items = $stmt->fetchAll();
 
 if (!$items) {
     flash_set('error', 'Your cart is empty.');
-    redirect('/cart.php');
+    redirect('/customer/cart.php');
 }
 
 $total = 0;
@@ -28,7 +28,7 @@ foreach ($items as $item) {
 }
 
 $pageTitle = 'Checkout';
-require __DIR__ . '/includes/header.php';
+require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1 class="h3 mb-4">Checkout</h1>
@@ -63,7 +63,7 @@ require __DIR__ . '/includes/header.php';
 
     <div class="col-md-5">
         <h2 class="h5">Delivery & Payment</h2>
-        <form method="post" action="<?= BASE_URL ?>/place_order.php">
+        <form method="post" action="<?= BASE_URL ?>/customer/place_order.php">
             <?= csrf_field() ?>
             <div class="mb-3">
                 <label class="form-label">Full Name</label>
@@ -89,4 +89,4 @@ require __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

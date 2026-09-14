@@ -1,9 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('/cart.php');
+    redirect('/customer/cart.php');
 }
 csrf_check();
 
@@ -14,4 +14,4 @@ db()->prepare('DELETE FROM cart_items WHERE cart_item_id = :id AND cart_id = :ca
     ->execute(['id' => $cartItemId, 'cart_id' => $cartId]);
 
 flash_set('success', 'Item removed from cart.');
-redirect('/cart.php');
+redirect('/customer/cart.php');

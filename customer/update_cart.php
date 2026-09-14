@@ -1,9 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('/cart.php');
+    redirect('/customer/cart.php');
 }
 csrf_check();
 
@@ -21,7 +21,7 @@ $row = $stmt->fetch();
 
 if (!$row) {
     flash_set('error', 'Cart item not found.');
-    redirect('/cart.php');
+    redirect('/customer/cart.php');
 }
 
 if ($quantity > (int)$row['stock_quantity']) {
@@ -32,4 +32,4 @@ if ($quantity > (int)$row['stock_quantity']) {
 db()->prepare('UPDATE cart_items SET quantity = :qty WHERE cart_item_id = :id')
     ->execute(['qty' => $quantity, 'id' => $cartItemId]);
 
-redirect('/cart.php');
+redirect('/customer/cart.php');

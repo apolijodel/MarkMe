@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 $productId = (int)($_GET['id'] ?? 0);
 $stmt = db()->prepare(
@@ -13,9 +13,9 @@ $product = $stmt->fetch();
 if (!$product) {
     http_response_code(404);
     $pageTitle = 'Not Found';
-    require __DIR__ . '/includes/header.php';
+    require __DIR__ . '/../includes/header.php';
     echo '<p>Product not found.</p>';
-    require __DIR__ . '/includes/footer.php';
+    require __DIR__ . '/../includes/footer.php';
     exit;
 }
 
@@ -24,7 +24,7 @@ $designs = $product['is_customizable'] ? db()->query('SELECT * FROM designs ORDE
 $outOfStock = (int)$product['stock_quantity'] <= 0;
 
 $pageTitle = $product['name'];
-require __DIR__ . '/includes/header.php';
+require __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="row g-4">
@@ -44,7 +44,7 @@ require __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <?php if (!$outOfStock): ?>
-        <form method="post" action="<?= BASE_URL ?>/add_to_cart.php" enctype="multipart/form-data">
+        <form method="post" action="<?= BASE_URL ?>/customer/add_to_cart.php" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <input type="hidden" name="product_id" value="<?= (int)$product['product_id'] ?>">
 
@@ -110,4 +110,4 @@ require __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

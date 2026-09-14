@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
 $userId = current_user()['user_id'];
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
         $_SESSION['user']['username'] = $username;
 
         flash_set('success', 'Profile updated.');
-        redirect('/profile.php');
+        redirect('/customer/profile.php');
     }
 
     $user = array_merge($user, compact('full_name', 'email', 'username', 'contact_number', 'address'));
@@ -75,12 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'chang
         $stmt = db()->prepare('UPDATE users SET password_hash = :hash WHERE user_id = :id');
         $stmt->execute(['hash' => password_hash($new, PASSWORD_DEFAULT), 'id' => $userId]);
         flash_set('success', 'Password changed successfully.');
-        redirect('/profile.php');
+        redirect('/customer/profile.php');
     }
 }
 
 $pageTitle = 'My Profile';
-require __DIR__ . '/includes/header.php';
+require __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="row g-4">
@@ -145,4 +145,4 @@ require __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

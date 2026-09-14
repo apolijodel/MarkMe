@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
 $stmt = db()->prepare('SELECT * FROM orders WHERE user_id = :uid ORDER BY created_at DESC');
@@ -15,7 +15,7 @@ $statusColors = [
 ];
 
 $pageTitle = 'My Orders';
-require __DIR__ . '/includes/header.php';
+require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1 class="h3 mb-4">My Orders</h1>
@@ -33,7 +33,7 @@ require __DIR__ . '/includes/header.php';
                         <td><?= e(date('M j, Y g:i A', strtotime($order['created_at']))) ?></td>
                         <td><?= format_price($order['total_amount']) ?></td>
                         <td><span class="badge bg-<?= $statusColors[$order['status']] ?? 'secondary' ?>"><?= e($order['status']) ?></span></td>
-                        <td><a href="<?= BASE_URL ?>/order_detail.php?id=<?= (int)$order['order_id'] ?>" class="btn btn-sm btn-outline-primary">View</a></td>
+                        <td><a href="<?= BASE_URL ?>/customer/order_detail.php?id=<?= (int)$order['order_id'] ?>" class="btn btn-sm btn-outline-primary">View</a></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -41,4 +41,4 @@ require __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

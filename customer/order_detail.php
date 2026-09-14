@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
 $orderId = (int)($_GET['id'] ?? 0);
@@ -10,9 +10,9 @@ $order = $stmt->fetch();
 if (!$order) {
     http_response_code(404);
     $pageTitle = 'Not Found';
-    require __DIR__ . '/includes/header.php';
+    require __DIR__ . '/../includes/header.php';
     echo '<p>Order not found.</p>';
-    require __DIR__ . '/includes/footer.php';
+    require __DIR__ . '/../includes/footer.php';
     exit;
 }
 
@@ -21,7 +21,7 @@ $itemStmt->execute(['id' => $orderId]);
 $items = $itemStmt->fetchAll();
 
 $pageTitle = 'Order #' . $order['order_id'];
-require __DIR__ . '/includes/header.php';
+require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1 class="h3 mb-3">Order #<?= (int)$order['order_id'] ?></h1>
@@ -59,4 +59,4 @@ require __DIR__ . '/includes/header.php';
     </tfoot>
 </table>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

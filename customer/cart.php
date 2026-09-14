@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
 $cartId = get_or_create_cart_id(current_user()['user_id']);
@@ -23,13 +23,13 @@ foreach ($items as $item) {
 }
 
 $pageTitle = 'My Cart';
-require __DIR__ . '/includes/header.php';
+require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1 class="h3 mb-4">Shopping Cart</h1>
 
 <?php if (!$items): ?>
-    <p class="text-muted">Your cart is empty. <a href="<?= BASE_URL ?>/catalog.php">Browse products</a>.</p>
+    <p class="text-muted">Your cart is empty. <a href="<?= BASE_URL ?>/customer/catalog.php">Browse products</a>.</p>
 <?php else: ?>
     <div class="table-responsive">
         <table class="table align-middle">
@@ -62,7 +62,7 @@ require __DIR__ . '/includes/header.php';
                         </td>
                         <td><?= format_price($item['price']) ?></td>
                         <td style="max-width:110px;">
-                            <form method="post" action="<?= BASE_URL ?>/update_cart.php" class="d-flex gap-1">
+                            <form method="post" action="<?= BASE_URL ?>/customer/update_cart.php" class="d-flex gap-1">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="cart_item_id" value="<?= (int)$item['cart_item_id'] ?>">
                                 <input type="number" name="quantity" value="<?= (int)$item['quantity'] ?>" min="1" max="<?= (int)$item['stock_quantity'] ?>" data-max-stock="<?= (int)$item['stock_quantity'] ?>" class="form-control form-control-sm">
@@ -71,7 +71,7 @@ require __DIR__ . '/includes/header.php';
                         </td>
                         <td><?= format_price($item['price'] * $item['quantity']) ?></td>
                         <td>
-                            <form method="post" action="<?= BASE_URL ?>/remove_cart_item.php" onsubmit="return confirm('Remove this item?');">
+                            <form method="post" action="<?= BASE_URL ?>/customer/remove_cart_item.php" onsubmit="return confirm('Remove this item?');">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="cart_item_id" value="<?= (int)$item['cart_item_id'] ?>">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
@@ -85,8 +85,8 @@ require __DIR__ . '/includes/header.php';
 
     <div class="d-flex justify-content-end align-items-center gap-3">
         <span class="fs-5">Total: <strong><?= format_price($total) ?></strong></span>
-        <a href="<?= BASE_URL ?>/checkout.php" class="btn btn-primary btn-lg">Proceed to Checkout</a>
+        <a href="<?= BASE_URL ?>/customer/checkout.php" class="btn btn-primary btn-lg">Proceed to Checkout</a>
     </div>
 <?php endif; ?>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -1,9 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('/cart.php');
+    redirect('/customer/cart.php');
 }
 csrf_check();
 
@@ -17,7 +17,7 @@ $paymentMethod = in_array($_POST['payment_method'] ?? '', ['Cash on Delivery', '
 
 if ($fullName === '' || $contactNumber === '' || $deliveryAddress === '') {
     flash_set('error', 'Please fill in all delivery details.');
-    redirect('/checkout.php');
+    redirect('/customer/checkout.php');
 }
 
 $cartId = get_or_create_cart_id($user['user_id']);
@@ -109,13 +109,13 @@ try {
 
     $pdo->commit();
 
-    redirect('/order_confirmation.php?order_id=' . $orderId);
+    redirect('/customer/order_confirmation.php?order_id=' . $orderId);
 } catch (RuntimeException $e) {
     $pdo->rollBack();
     flash_set('error', $e->getMessage());
-    redirect('/cart.php');
+    redirect('/customer/cart.php');
 } catch (Throwable $e) {
     $pdo->rollBack();
     flash_set('error', 'An unexpected error occurred while placing your order. Please try again.');
-    redirect('/checkout.php');
+    redirect('/customer/checkout.php');
 }

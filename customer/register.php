@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_guest();
 
 $errors = [];
@@ -58,12 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db()->prepare('INSERT INTO carts (user_id) VALUES (:uid)')->execute(['uid' => $userId]);
 
         flash_set('success', 'Account created! Please log in.');
-        redirect('/login.php');
+        redirect('/customer/login.php');
     }
 }
 
 $pageTitle = 'Register';
-require __DIR__ . '/includes/header.php';
+require __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="row justify-content-center">
@@ -110,8 +110,8 @@ require __DIR__ . '/includes/header.php';
             </div>
             <button type="submit" class="btn btn-primary w-100">Register</button>
         </form>
-        <p class="mt-3">Already have an account? <a href="<?= BASE_URL ?>/login.php">Log in</a></p>
+        <p class="mt-3">Already have an account? <a href="<?= BASE_URL ?>/customer/login.php">Log in</a></p>
     </div>
 </div>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

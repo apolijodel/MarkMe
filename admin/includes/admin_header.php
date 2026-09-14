@@ -18,7 +18,7 @@ $pageTitle = $pageTitle ?? 'Admin';
         <a class="navbar-brand fw-bold" href="<?= BASE_URL ?>/admin/dashboard.php">MarkMe Admin</a>
         <span class="navbar-text text-light">
             <?= e(current_user()['username']) ?> &middot;
-            <a class="text-light" href="<?= BASE_URL ?>/index.php">View Site</a> &middot;
+            <a class="text-light" href="<?= BASE_URL ?>/customer/index.php">View Site</a> &middot;
             <a class="text-light" href="<?= BASE_URL ?>/admin/logout.php">Logout</a>
         </span>
     </div>
