@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg site-nav sticky-top">
-    <div class="container">
+    <div class="container-fluid px-3 px-lg-4">
         <a class="navbar-brand fw-bold" href="<?= BASE_URL ?>/customer/index.php">MarkMe</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
             <span class="navbar-toggler-icon"></span>

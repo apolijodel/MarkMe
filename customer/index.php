@@ -228,7 +228,7 @@ require __DIR__ . '/../includes/header.php';
 </section>
 
 <!-- Contact -->
-<section class="section section-alt" id="contact">
+<section class="section" id="contact">
     <div class="container">
         <div class="section-title">
             <div class="eyebrow">Get In Touch</div>
