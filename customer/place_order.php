@@ -109,6 +109,15 @@ try {
 
     $pdo->commit();
 
+    // After the commit on purpose: the audit trail records what happened, so
+    // it must never be able to roll an order back.
+    log_activity(
+        'order.placed',
+        'Placed order #' . $orderId . ' for ' . format_price($total),
+        'order',
+        $orderId
+    );
+
     redirect('/customer/order_confirmation.php?order_id=' . $orderId);
 } catch (RuntimeException $e) {
     $pdo->rollBack();

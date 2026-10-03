@@ -1,7 +1,17 @@
 -- MarkMe: Customizable Bookmark E-Commerce System
 -- Database schema + demonstration seed data.
 
-CREATE DATABASE IF NOT EXISTS markme_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- ---------------------------------------------------------------------
+-- WARNING: this script RESETS the database. The DROP below deletes every
+-- existing MarkMe record — accounts, orders, carts and saved designs —
+-- and rebuilds the schema with the demonstration seed data further down.
+-- Run it to prepare a clean demo, never against data you want to keep.
+--
+-- Without the DROP, re-importing over an existing markme_db fails with
+-- "Table 'users' already exists", so a reset was not actually possible.
+-- ---------------------------------------------------------------------
+DROP DATABASE IF EXISTS markme_db;
+CREATE DATABASE markme_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE markme_db;
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -11,15 +21,28 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ---------------------------------------------------------------------
 CREATE TABLE users (
     user_id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    role            ENUM('customer', 'admin') NOT NULL DEFAULT 'customer',
+    role            ENUM('customer', 'staff', 'admin') NOT NULL DEFAULT 'customer',
     username        VARCHAR(50)  NOT NULL UNIQUE,
     email           VARCHAR(150) NOT NULL UNIQUE,
     password_hash   VARCHAR(255) NOT NULL,
     full_name       VARCHAR(150) NOT NULL,
+    avatar_path     VARCHAR(255) NULL,
     contact_number  VARCHAR(30)  NULL,
     address         VARCHAR(255) NULL,
+    city            VARCHAR(100) NULL,
+    province        VARCHAR(100) NULL,
+    postal_code     VARCHAR(10)  NULL,
     is_active       TINYINT(1)   NOT NULL DEFAULT 1,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- Sign-in security. The TOTP secret is the shared key behind two-factor
+    -- authentication, so it is read only by the code that verifies a code and
+    -- is never selected into a page. activated_at is NULL until the account
+    -- has confirmed its email; password_changed_at drives expiry.
+    mfa_secret          VARCHAR(64) NULL,
+    mfa_enabled         TINYINT(1)  NOT NULL DEFAULT 0,
+    mfa_confirmed_at    TIMESTAMP   NULL,
+    password_changed_at TIMESTAMP   NULL,
+    activated_at        TIMESTAMP   NULL,
     INDEX idx_users_role (role)
 ) ENGINE=InnoDB;
 
@@ -63,9 +86,11 @@ CREATE TABLE products (
     description     TEXT NULL,
     price           DECIMAL(10,2) NOT NULL,
     stock_quantity  INT UNSIGNED NOT NULL DEFAULT 0,
+    low_stock_threshold INT UNSIGNED NOT NULL DEFAULT 5,
     image_path      VARCHAR(255) NOT NULL,
     is_customizable TINYINT(1)   NOT NULL DEFAULT 1,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_products_category FOREIGN KEY (category_id)
         REFERENCES categories(category_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     INDEX idx_products_category (category_id),
@@ -119,7 +144,7 @@ CREATE TABLE orders (
     delivery_address  VARCHAR(255) NOT NULL,
     payment_method    ENUM('Cash on Delivery', 'Bank Transfer') NOT NULL DEFAULT 'Cash on Delivery',
     total_amount      DECIMAL(10,2) NOT NULL,
-    status            ENUM('Pending', 'Processing', 'Ready for Delivery', 'Completed', 'Cancelled')
+    status            ENUM('Pending', 'Processing', 'On Shipping', 'Completed', 'Cancelled')
                           NOT NULL DEFAULT 'Pending',
     created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -171,19 +196,157 @@ CREATE TABLE feedback_messages (
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- ---------------------------------------------------------------------
+-- saved_designs: customer-owned reusable bookmark designs.
+-- Normalized against shapes/designs/products rather than copying their
+-- names, and removed with the owning user.
+-- ---------------------------------------------------------------------
+CREATE TABLE saved_designs (
+    saved_design_id   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id           INT UNSIGNED NOT NULL,
+    product_id        INT UNSIGNED NULL,
+    design_name       VARCHAR(100) NOT NULL,
+    shape_id          INT UNSIGNED NULL,
+    design_id         INT UNSIGNED NULL,
+    custom_text       VARCHAR(120) NULL,
+    custom_image_path VARCHAR(255) NULL,
+    created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_saved_designs_user FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_saved_designs_product FOREIGN KEY (product_id)
+        REFERENCES products(product_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_saved_designs_shape FOREIGN KEY (shape_id)
+        REFERENCES shapes(shape_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_saved_designs_design FOREIGN KEY (design_id)
+        REFERENCES designs(design_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    INDEX idx_saved_designs_user (user_id)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- settings: key/value store backing the admin Settings screen, so store
+-- information is persisted rather than hardcoded in the markup.
+-- ---------------------------------------------------------------------
+CREATE TABLE settings (
+    setting_key   VARCHAR(60) PRIMARY KEY,
+    setting_value TEXT NULL,
+    updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- activity_log: the audit trail behind the admin dashboard. One row per
+-- notable event from either side of the site. The actor's name and role are
+-- snapshotted so an entry stays readable after the account is renamed or
+-- deleted; user_id is kept for linking and goes NULL instead.
+-- ---------------------------------------------------------------------
+CREATE TABLE activity_log (
+    log_id       INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT UNSIGNED NULL,
+    actor_role   ENUM('customer','staff','admin','guest') NOT NULL DEFAULT 'guest',
+    actor_name   VARCHAR(100) NOT NULL,
+    action       VARCHAR(50) NOT NULL,
+    module       VARCHAR(40) NULL,
+    entity_type  VARCHAR(30) NULL,
+    entity_id    INT UNSIGNED NULL,
+    summary      VARCHAR(255) NOT NULL,
+    -- Recorded with the event so an entry can be traced to where it came
+    -- from, not just to who it belongs to.
+    ip_address   VARCHAR(45)  NULL,
+    user_agent   VARCHAR(255) NULL,
+    created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_activity_user FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    INDEX idx_activity_created (created_at DESC),
+    INDEX idx_activity_role (actor_role),
+    INDEX idx_activity_module (module),
+    INDEX idx_activity_action (action),
+    INDEX idx_activity_entity (entity_type, entity_id)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- account_locks: failed sign-in attempts, and the lock they lead to
+--
+-- One row per account rather than one per attempt: the question being asked
+-- is "is this account locked right now", not "list every attempt ever made".
+-- The audit trail already records the attempts.
+-- ---------------------------------------------------------------------
+CREATE TABLE account_locks (
+    lock_id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT UNSIGNED NOT NULL,
+    username        VARCHAR(50)  NOT NULL,
+    failed_attempts INT UNSIGNED NOT NULL DEFAULT 0,
+    last_attempt_at TIMESTAMP    NULL,
+    locked_at       TIMESTAMP    NULL,
+    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_account_locks_user FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY uq_account_locks_user (user_id),
+    INDEX idx_account_locks_locked (locked_at)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- email_verification_tokens: one-time links that activate an account
+--
+-- Only the SHA-256 of the token is stored. A stolen copy of this table does
+-- not let anyone activate an account, because the value that was emailed
+-- cannot be recovered from its hash.
+-- ---------------------------------------------------------------------
+CREATE TABLE email_verification_tokens (
+    token_id   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT UNSIGNED NOT NULL,
+    token_hash CHAR(64)     NOT NULL,
+    purpose    ENUM('activation') NOT NULL DEFAULT 'activation',
+    expires_at DATETIME     NOT NULL,
+    used_at    TIMESTAMP    NULL,
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_evt_user FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY uq_evt_hash (token_hash),
+    INDEX idx_evt_user (user_id),
+    INDEX idx_evt_expires (expires_at)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- password_history: previous hashes, so a password cannot be reused
+--
+-- Hashes only, exactly as in users.password_hash — this table makes reuse
+-- detectable without ever storing a password that could be read back.
+-- ---------------------------------------------------------------------
+CREATE TABLE password_history (
+    history_id    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id       INT UNSIGNED NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pwhist_user FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_pwhist_user (user_id, created_at)
+) ENGINE=InnoDB;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ---------------------------------------------------------------------
 -- Seed data
 -- ---------------------------------------------------------------------
 
--- Admin account: username "admin", password "Admin@123" (change after import).
+-- Administrator. Sign in at /admin/login.php with either the username
+-- "admin" or the email below, and the password "duldulao2006".
 INSERT INTO users (role, username, email, password_hash, full_name, contact_number, address, is_active) VALUES
-('admin', 'admin', 'admin@markme.test', '$2y$10$AQzVaZ3B2WDpw2SPe0biyegyhM7YHYbCufVG/ptoQSEsPkENjfpXu', 'MarkMe Administrator', '09171234567', 'MarkMe HQ', 1);
+('admin', 'admin', 'duldulao_rhodlhian@plpasig.edu.ph', '$2y$10$.s2jyG8drFsvfxx1Zqk1QeVQUfqteDBxhtmafIs3SdH6sPwdu9qa.', 'Rhodlhian Duldulao', '09171234567', 'MarkMe HQ', 1);
 
--- Demo customer account: username "juana", password "Customer@123".
+-- Staff account: restricted back-office access. Sign in with the username
+-- "staff" or the email below, and the password "samillano2006". Staff may
+-- view the catalog, inventory, customers and orders, restock products and
+-- update order status — nothing else.
 INSERT INTO users (role, username, email, password_hash, full_name, contact_number, address, is_active) VALUES
-('customer', 'juana', 'juana@example.test', '$2y$10$RXTrHLS6a.QykwbmCZZndel9JEaZwg9oUbTjXZRiuas6QopEqWiza', 'Juana Dela Cruz', '09179876543', '123 Rizal St, Manila', 1);
+('staff', 'staff', 'samillano_johnrey@plpasig.edu.ph', '$2y$10$yMdvv.IcMr8kP1vvORlCNu0Qh71eRCxwO0x3YdUrJmkltm.asth7e', 'John Rey Samillano', '09171112233', 'MarkMe HQ', 1);
+
+-- Customer accounts. Both use the password "Customer@123".
+-- The first is the main demonstration account; the second gives the admin
+-- Customers screen more than one row to show.
+INSERT INTO users (role, username, email, password_hash, full_name, contact_number, address, city, province, postal_code, is_active) VALUES
+('customer', 'Jodel', 'apoli_jodel@plpasig.edu.ph', '$2y$10$RXTrHLS6a.QykwbmCZZndel9JEaZwg9oUbTjXZRiuas6QopEqWiza', 'Jodel Apoli', '09179876543', '79 C. Raymundo Ave', 'Pasig', 'Metro Manila', '1600', 1),
+('customer', 'juana', 'juana@example.test', '$2y$10$RXTrHLS6a.QykwbmCZZndel9JEaZwg9oUbTjXZRiuas6QopEqWiza', 'Juana Dela Cruz', '09171112222', '45 Mabini Ave', 'Manila', 'Metro Manila', '1000', 1);
 
 INSERT INTO categories (name, description) VALUES
 ('Classic Bookmarks', 'Ready-made bookmark designs, no customization required'),
@@ -208,3 +371,12 @@ INSERT INTO products (category_id, name, description, price, stock_quantity, ima
 (1, 'Classic Floral Bookmark', 'Pre-made floral design bookmark, ready to ship.', 49.00, 100, 'classic-floral.svg', 0),
 (1, 'Minimalist Line Art Bookmark', 'Simple, elegant line-art bookmark for everyday reading.', 45.00, 0, 'minimalist-lineart.svg', 0),
 (3, 'Reader\'s Gift Set (3-pack)', 'A set of three classic bookmarks, ready for gifting.', 129.00, 25, 'gift-set.svg', 0);
+
+INSERT INTO settings (setting_key, setting_value) VALUES
+('store_name',         'MarkMe'),
+('store_tagline',      'Handmade, personalized bookmarks'),
+('store_email',        'hello@markme.test'),
+('store_phone',        '09171234567'),
+('store_address',      'Manila, Philippines'),
+('low_stock_default',  '5'),
+('allow_registration', '1');

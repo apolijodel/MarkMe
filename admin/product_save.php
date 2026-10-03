@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/upload.php';
-require_admin();
+require_can('products.manage');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('/admin/products.php');
@@ -56,15 +56,28 @@ if ($productId) {
             'price' => $price, 'stock' => $stock, 'cust' => $isCustomizable, 'id' => $productId,
         ]);
     }
+    log_activity('product.updated', 'Updated product “' . $name . '”', 'product', $productId);
     flash_set('success', 'Product updated.');
 } else {
+    // New products start at the store-wide default threshold, which admins
+    // set in Settings and can then override per product in Inventory.
+    $threshold = max(0, (int)setting('low_stock_default', '5'));
+
     db()->prepare(
-        'INSERT INTO products (category_id, name, description, price, stock_quantity, image_path, is_customizable)
-         VALUES (:cat, :name, :desc, :price, :stock, :img, :cust)'
+        'INSERT INTO products (category_id, name, description, price, stock_quantity, image_path,
+                               is_customizable, low_stock_threshold)
+         VALUES (:cat, :name, :desc, :price, :stock, :img, :cust, :threshold)'
     )->execute([
         'cat' => $categoryId, 'name' => $name, 'desc' => $description ?: null,
         'price' => $price, 'stock' => $stock, 'img' => $imagePath, 'cust' => $isCustomizable,
+        'threshold' => $threshold,
     ]);
+    log_activity(
+        'product.created',
+        'Added product “' . $name . '” at ' . format_price($price),
+        'product',
+        (int)db()->lastInsertId()
+    );
     flash_set('success', 'Product added.');
 }
 

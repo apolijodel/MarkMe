@@ -20,16 +20,31 @@ $stmt->execute(['id' => $cartItemId, 'cart_id' => $cartId]);
 $row = $stmt->fetch();
 
 if (!$row) {
+    if (is_ajax()) {
+        json_response(['ok' => false, 'message' => 'Cart item not found.'], 404);
+    }
     flash_set('error', 'Cart item not found.');
     redirect('/customer/cart.php');
 }
 
+$capped = false;
 if ($quantity > (int)$row['stock_quantity']) {
-    $quantity = (int)$row['stock_quantity'];
-    flash_set('error', 'Quantity was reduced to match available stock.');
+    $quantity = max(1, (int)$row['stock_quantity']);
+    $capped = true;
 }
 
 db()->prepare('UPDATE cart_items SET quantity = :qty WHERE cart_item_id = :id')
     ->execute(['qty' => $quantity, 'id' => $cartItemId]);
 
+if (is_ajax()) {
+    json_response([
+        'ok' => true,
+        'message' => $capped ? 'Quantity reduced to match stock' : 'Cart updated',
+        'count' => cart_item_count(),
+    ]);
+}
+
+if ($capped) {
+    flash_set('error', 'Quantity was reduced to match available stock.');
+}
 redirect('/customer/cart.php');

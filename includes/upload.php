@@ -57,3 +57,36 @@ function handle_image_upload(array $file, string $targetDir): string
 
     return $filename;
 }
+
+/**
+ * Duplicate an already-stored upload under a fresh random filename.
+ *
+ * Used when a saved design is added to the cart. The cart/order line takes its
+ * own copy of the photo rather than pointing at the saved design's file, so the
+ * two have independent lifetimes: editing or deleting a saved design can never
+ * pull the image out from under an order that already referenced it. This is
+ * the same snapshot rule order_items already applies to names and prices.
+ *
+ * Returns the new filename, or null when the source is missing.
+ */
+function copy_stored_upload(string $dir, ?string $filename): ?string
+{
+    if (!$filename) {
+        return null;
+    }
+
+    $source = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR . basename($filename);
+    if (!is_file($source)) {
+        return null;
+    }
+
+    $ext = strtolower(pathinfo($source, PATHINFO_EXTENSION));
+    if (!in_array($ext, ALLOWED_IMAGE_EXT, true)) {
+        return null;
+    }
+
+    $copy = bin2hex(random_bytes(16)) . '.' . $ext;
+    $destination = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR . $copy;
+
+    return copy($source, $destination) ? $copy : null;
+}

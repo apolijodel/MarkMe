@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
-require_admin();
+require_can('categories.manage');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('/admin/categories.php');
@@ -26,10 +26,22 @@ if ($stmt->fetch()) {
 if ($categoryId) {
     db()->prepare('UPDATE categories SET name = :name, description = :description WHERE category_id = :id')
         ->execute(['name' => $name, 'description' => $description ?: null, 'id' => $categoryId]);
+    log_activity(
+        'category.updated',
+        'Updated category “' . $name . '”',
+        'category',
+        $categoryId
+    );
     flash_set('success', 'Category updated.');
 } else {
     db()->prepare('INSERT INTO categories (name, description) VALUES (:name, :description)')
         ->execute(['name' => $name, 'description' => $description ?: null]);
+    log_activity(
+        'category.created',
+        'Added category “' . $name . '”',
+        'category',
+        (int)db()->lastInsertId()
+    );
     flash_set('success', 'Category added.');
 }
 

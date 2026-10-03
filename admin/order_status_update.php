@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
-require_admin();
+require_can('orders.status');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('/admin/orders.php');
@@ -12,8 +12,8 @@ $newStatus = $_POST['status'] ?? '';
 
 $transitions = [
     'Pending' => ['Processing', 'Cancelled'],
-    'Processing' => ['Ready for Delivery', 'Cancelled'],
-    'Ready for Delivery' => ['Completed'],
+    'Processing' => ['On Shipping', 'Cancelled'],
+    'On Shipping' => ['Completed'],
     'Completed' => [],
     'Cancelled' => [],
 ];
@@ -34,6 +34,13 @@ if (!in_array($newStatus, $transitions[$current] ?? [], true)) {
 
 db()->prepare('UPDATE orders SET status = :status WHERE order_id = :id')
     ->execute(['status' => $newStatus, 'id' => $orderId]);
+
+log_activity(
+    'order.status',
+    'Moved order #' . $orderId . ' from ' . $current . ' to ' . $newStatus,
+    'order',
+    $orderId
+);
 
 flash_set('success', 'Order status updated to ' . $newStatus . '.');
 redirect('/admin/order_view.php?id=' . $orderId);

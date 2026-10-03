@@ -1,223 +1,335 @@
 <?php
-require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/customer/product_query.php';
 
-$categories = db()->query('SELECT * FROM categories ORDER BY name')->fetchAll();
+$categories = categories_with_counts();
 
-$activeCategory = isset($_GET['category']) && $_GET['category'] !== '' ? (int)$_GET['category'] : null;
+// The Shop section carousel. It pages through these in threes, so it wants
+// more than a handful — but not the whole catalogue on a large store, which
+// is what "View all products" and shop.php are for.
+$shopProducts = fetch_products(product_filters([]), 12);
 
-$sql = 'SELECT p.*, c.name AS category_name FROM products p JOIN categories c ON c.category_id = p.category_id';
-$params = [];
-if ($activeCategory) {
-    $sql .= ' WHERE p.category_id = :cat';
-    $params['cat'] = $activeCategory;
-}
-$sql .= ' ORDER BY p.created_at DESC';
+$priceBounds = db()->query('SELECT MIN(price) AS lo, MAX(price) AS hi FROM products')->fetch()
+    ?: ['lo' => null, 'hi' => null];
 
-$stmt = db()->prepare($sql);
-$stmt->execute($params);
-$products = $stmt->fetchAll();
-$productSlides = array_chunk($products, 3);
+$productCount = (int)db()->query('SELECT COUNT(*) FROM products')->fetchColumn();
+$shapeCount = (int)db()->query('SELECT COUNT(*) FROM shapes')->fetchColumn();
+$designCount = (int)db()->query('SELECT COUNT(*) FROM designs')->fetchColumn();
 
 $contactError = flash_get('contact_error');
 $contactSuccess = flash_get('contact_success');
 $contactOld = flash_get('contact_old') ?? ['name' => '', 'email' => '', 'message' => ''];
 
-$pageTitle = 'Home';
+$pageTitle = 'Handmade Personalized Bookmarks';
 $fullWidth = true;
-require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/../includes/customer/header.php';
 ?>
 
-<!-- Hero -->
-<section class="hero">
+<!-- ============================ Hero ============================ -->
+<section class="hero" id="top">
     <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-6">
-                <div class="eyebrow">Handmade &middot; Personalized &middot; Yours</div>
+        <div class="hero-grid">
+            <div class="hero-copy">
+                <p class="eyebrow">Handmade &middot; Personalized &middot; Yours</p>
                 <h1>A bookmark as unique as your story.</h1>
-                <p class="lead">Pick a shape, choose a design, upload your favorite photo, and add a
-                    name or quote. MarkMe turns a simple bookmark into something worth keeping.</p>
-                <div class="d-flex flex-wrap gap-3 mt-2">
-                    <a href="#products" class="btn btn-primary btn-lg">Shop Now</a>
-                    <a href="#how-it-works" class="btn btn-outline-primary btn-lg">See How It Works</a>
+                <p class="lede">Choose a shape and a design, upload a photo you love, and add a name or a
+                    line worth remembering. We craft it by hand and send it your way.</p>
+
+                <div class="hero-actions">
+                    <a href="#shop" class="btn btn-primary btn-lg">
+                        Shop Bookmarks <?= icon('arrow-right', 18) ?>
+                    </a>
+                    <a href="#how-it-works" class="btn btn-secondary btn-lg">How It Works</a>
+                </div>
+
+                <div class="hero-flow">
+                    <span class="step"><?= icon('wand', 15) ?> Customize</span>
+                    <span class="arrow" aria-hidden="true"><?= icon('chevron-right', 14) ?></span>
+                    <span class="step"><?= icon('eye', 15) ?> Preview</span>
+                    <span class="arrow" aria-hidden="true"><?= icon('chevron-right', 14) ?></span>
+                    <span class="step"><?= icon('package', 15) ?> Order</span>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="hero-visual">
-                    <div class="bookmark-shape bm-1"></div>
-                    <div class="bookmark-shape bm-2"></div>
-                    <div class="bookmark-shape bm-3"></div>
-                </div>
+
+            <div class="hero-stage" aria-hidden="true">
+                <div class="bookmark bookmark-a">For Mama</div>
+                <div class="bookmark bookmark-b">Keep&nbsp;going.</div>
+                <div class="bookmark bookmark-c">Ch. 12</div>
+                <span class="hero-chip hero-chip-1"><?= icon('image', 15) ?> Your photo</span>
+                <span class="hero-chip hero-chip-2"><?= icon('type', 15) ?> Your words</span>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Our Story -->
+<!-- ======================== Value strip ========================= -->
+<div class="container">
+    <div class="value-strip">
+        <div class="value-item">
+            <?= icon('scissors', 20) ?>
+            <div><h3>Made by hand</h3><p>Cut, printed and finished one at a time.</p></div>
+        </div>
+        <div class="value-item">
+            <?= icon('eye', 20) ?>
+            <div><h3>Preview before you buy</h3><p>See your bookmark before it is made.</p></div>
+        </div>
+        <div class="value-item">
+            <?= icon('wallet', 20) ?>
+            <div><h3>Pay on delivery</h3><p>Cash on delivery or manual bank transfer.</p></div>
+        </div>
+        <div class="value-item">
+            <?= icon('truck', 20) ?>
+            <div><h3>Track your order</h3><p>Follow every step from packing to doorstep.</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================== Our Story ========================= -->
 <section class="section" id="story">
-    <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-5">
-                <div class="story-media p-4">
-                    <div class="bookmark-shape" style="position:static;width:70px;height:170px;background:var(--gold);"></div>
-                    <div class="bookmark-shape" style="position:static;width:70px;height:170px;background:var(--accent);"></div>
-                    <div class="bookmark-shape" style="position:static;width:70px;height:170px;background:var(--cream);"></div>
+    <div class="container" data-reveal>
+        <div class="story-grid">
+            <div class="story-media" aria-hidden="true">
+                <div class="bookmark-row">
+                    <div class="bookmark">Ate Rina</div>
+                    <div class="bookmark">Ch. 1</div>
+                    <div class="bookmark">2019</div>
                 </div>
             </div>
-            <div class="col-lg-7">
-                <div class="eyebrow">Our Story</div>
-                <h2 class="mt-2 mb-3">Made for readers, gift-givers, and everyone in between.</h2>
-                <p class="story-quote">"We started MarkMe because every book someone loves deserves a bookmark
-                    that means something too."</p>
-                <p class="text-body-secondary">What began as a small idea for handmade class gifts grew into a
-                    platform where students, teachers, readers, and stationery lovers can design a bookmark
-                    that's genuinely theirs — a name, a favorite quote, a cherished photo, all on a shape and
-                    design they picked themselves.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- How It Works (incl. what you can personalize) -->
-<section class="section section-alt" id="how-it-works">
-    <div class="container">
-        <div class="section-title">
-            <div class="eyebrow">How It Works</div>
-            <h2 class="mt-2">From idea to order in three steps</h2>
-        </div>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h3>Personalize</h3>
-                    <p>Choose a product, then make it yours:</p>
-                    <ul class="personalize-list">
-                        <li>Shape — rectangular, rounded, heart, or tasseled</li>
-                        <li>Design — floral, minimalist, starry night, or plain kraft</li>
-                        <li>Photo — upload a favorite picture (JPG/PNG/WEBP, up to 2MB)</li>
-                        <li>Text — a name, quote, or short dedication</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h3>Preview</h3>
-                    <p>Check your shape, design, photo, and text together before adding to cart.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h3>Order</h3>
-                    <p>Checkout with Cash on Delivery or bank transfer, then track your order status.</p>
+            <div class="story-copy">
+                <p class="eyebrow">Our Story</p>
+                <h2>Made for readers, gift-givers, and everyone in between.</h2>
+                <p class="story-quote">&ldquo;Every book someone loves deserves a bookmark that means
+                    something too.&rdquo;</p>
+                <p class="text-soft">MarkMe started as a batch of handmade class gifts. It grew into a small
+                    studio where students, teachers and stationery lovers design a bookmark that is genuinely
+                    theirs &mdash; a name, a favourite line, a photo worth keeping, on a shape and design
+                    they picked themselves.</p>
+                <div class="story-stats">
+                    <div><span class="num mono-num"><?= $shapeCount ?></span><span class="lbl">Shapes</span></div>
+                    <div><span class="num mono-num"><?= $designCount ?></span><span class="lbl">Designs</span></div>
+                    <div><span class="num mono-num"><?= $productCount ?></span><span class="lbl">Products</span></div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Products -->
-<section class="section section-alt" id="products">
-    <div class="container">
-        <div class="section-title">
-            <div class="eyebrow">Products</div>
-            <h2 class="mt-2">Shop Our Bookmarks</h2>
+<!-- ======================== How It Works ======================== -->
+<section class="section section-cream" id="how-it-works">
+    <div class="container" data-reveal>
+        <div class="section-head section-head-center">
+            <p class="eyebrow">How It Works</p>
+            <h2>Make it yours in 3 simple steps</h2>
         </div>
 
-        <div class="category-pills">
-            <a href="<?= BASE_URL ?>/customer/index.php#products" class="pill <?= !$activeCategory ? 'active' : '' ?>">All</a>
+        <div class="steps-grid">
+            <article class="step-card">
+                <div class="step-top">
+                    <span class="step-num">01</span>
+                    <span class="step-icon"><?= icon('wand', 22) ?></span>
+                </div>
+                <h3>Personalize</h3>
+                <p>Pick your shape, design, photo and text.</p>
+            </article>
+
+            <article class="step-card">
+                <div class="step-top">
+                    <span class="step-num">02</span>
+                    <span class="step-icon"><?= icon('eye', 22) ?></span>
+                </div>
+                <h3>Preview</h3>
+                <p>See your bookmark before you order.</p>
+            </article>
+
+            <article class="step-card">
+                <div class="step-top">
+                    <span class="step-num">03</span>
+                    <span class="step-icon"><?= icon('package', 22) ?></span>
+                </div>
+                <h3>Order</h3>
+                <p>Check out and we&rsquo;ll craft it by hand.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- ============================ Shop =========================== -->
+<!-- The shop lives here, in the same page and the same visual language as
+     every other section. Category chips filter the carousel in place via
+     shop_products.php; shop.php is the full grid and the no-JavaScript
+     fallback, reached from "View all products". -->
+<section class="section" id="shop">
+    <div class="container" data-reveal>
+        <!-- Heading centred in the section, with the link parked on the right.
+             The three-column grid keeps the heading optically centred rather
+             than pushed off-centre by the button's width. -->
+        <div class="section-head-split">
+            <div class="shs-spacer" aria-hidden="true"></div>
+            <div class="shs-title">
+                <p class="eyebrow">Shop</p>
+                <h2>Bookmarks worth keeping</h2>
+            </div>
+            <div class="shs-action">
+                <a href="<?= BASE_URL ?>/customer/shop.php" class="btn btn-secondary btn-sm">
+                    View all products <?= icon('arrow-right', 15) ?>
+                </a>
+            </div>
+        </div>
+
+        <!-- Buttons, not links: choosing a category filters the carousel
+             below rather than navigating to a category page. -->
+        <div class="filter-pills filter-pills-center" role="group" aria-label="Filter by category">
+            <button type="button" class="pill active" data-filter-category="" aria-pressed="true">All</button>
             <?php foreach ($categories as $cat): ?>
-                <a href="<?= BASE_URL ?>/customer/index.php?category=<?= (int)$cat['category_id'] ?>#products" class="pill <?= $activeCategory === (int)$cat['category_id'] ? 'active' : '' ?>"><?= e($cat['name']) ?></a>
+                <button type="button" class="pill" aria-pressed="false"
+                        data-filter-category="<?= (int)$cat['category_id'] ?>">
+                    <?= e($cat['name']) ?>
+                </button>
             <?php endforeach; ?>
         </div>
 
-        <?php if (!$products): ?>
-            <p class="text-center text-muted">No products in this category yet.</p>
-        <?php else: ?>
-            <div id="productCarousel" class="carousel slide product-carousel" data-bs-ride="false">
-                <div class="carousel-inner">
-                    <?php foreach ($productSlides as $i => $slide): ?>
-                        <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
-                            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-                                <?php foreach ($slide as $product): ?>
-                                    <?php $outOfStock = (int)$product['stock_quantity'] <= 0; ?>
-                                    <div class="col">
-                                        <a class="card h-100 product-card text-decoration-none <?= $outOfStock ? 'stock-badge-out' : '' ?>" href="<?= BASE_URL ?>/customer/product.php?id=<?= (int)$product['product_id'] ?>">
-                                            <img src="<?= BASE_URL ?>/uploads/products/<?= e($product['image_path']) ?>" class="card-img-top" alt="<?= e($product['name']) ?>">
-                                            <div class="card-body">
-                                                <span class="badge bg-secondary mb-2"><?= e($product['category_name']) ?></span>
-                                                <h3 class="h6 card-title"><?= e($product['name']) ?></h3>
-                                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                                    <span class="fw-semibold"><?= format_price($product['price']) ?></span>
-                                                    <?php if ($outOfStock): ?>
-                                                        <span class="badge bg-danger">Out of Stock</span>
-                                                    <?php else: ?>
-                                                        <span class="badge bg-success"><?= (int)$product['stock_quantity'] ?> in stock</span>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <span class="product-card-link">View Details &rarr;</span>
-                                            </div>
-                                        </a>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
+        <p class="shop-count" data-shop-status aria-live="polite">
+            <?= count($shopProducts) ?> <?= count($shopProducts) === 1 ? 'bookmark' : 'bookmarks' ?><?php
+                if ($priceBounds['lo'] !== null): ?>, from <?= format_price((float)$priceBounds['lo']) ?><?php
+                endif; ?>
+        </p>
+
+        <div class="carousel">
+            <button type="button" class="carousel-nav prev" data-carousel-prev aria-label="Previous products">
+                <?= icon('chevron-left', 20) ?>
+            </button>
+
+            <div class="carousel-viewport">
+                <div class="carousel-track product-grid-carousel" data-carousel-track>
+                    <?php if (!$shopProducts): ?>
+                        <div class="shop-empty">
+                            <span class="empty-icon"><?= icon('package', 26) ?></span>
+                            <h3>No products yet</h3>
+                            <p>New bookmarks are on their way. Check back soon.</p>
                         </div>
-                    <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php foreach ($shopProducts as $product): require __DIR__ . '/_product_card.php'; endforeach; ?>
+                    <?php endif; ?>
                 </div>
-                <?php if (count($productSlides) > 1): ?>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-                        <span class="carousel-arrow" aria-hidden="true">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                        </span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-                        <span class="carousel-arrow" aria-hidden="true">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-                        </span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                <?php endif; ?>
             </div>
-        <?php endif; ?>
+
+            <button type="button" class="carousel-nav next" data-carousel-next aria-label="More products">
+                <?= icon('chevron-right', 20) ?>
+            </button>
+        </div>
+
+        <noscript>
+            <p class="shop-count" style="margin-top:var(--s-5)">
+                <a href="<?= BASE_URL ?>/customer/shop.php">Browse all bookmarks and filter by category &rarr;</a>
+            </p>
+        </noscript>
     </div>
 </section>
 
-<!-- Contact -->
+<!-- ============================= FAQ ============================ -->
+<!-- A section of its own, after the shop: browse first, then the
+     questions, then get in touch. The tinted background separates it
+     from the plain Shop band above and the Contact band below. -->
+<section class="section section-cream" id="faq">
+    <div class="container" data-reveal>
+        <div class="section-head section-head-center">
+            <p class="eyebrow">FAQ</p>
+            <h2>Questions? We&rsquo;ve got you.</h2>
+        </div>
+
+        <!-- Native <details> — an accordion with no extra JavaScript. -->
+        <div class="faq-list">
+            <details class="faq-item">
+                <summary>Can I customize my bookmark?<span class="faq-mark" aria-hidden="true"><?= icon('chevron-down', 18) ?></span></summary>
+                <p>Yes &mdash; pick a shape, a design, a photo and your own text. You&rsquo;ll need an account,
+                    and you can preview it before ordering.</p>
+            </details>
+
+            <details class="faq-item">
+                <summary>Can I upload my own photo?<span class="faq-mark" aria-hidden="true"><?= icon('chevron-down', 18) ?></span></summary>
+                <p>You can. JPG, PNG or WEBP, up to 2MB.</p>
+            </details>
+
+            <details class="faq-item">
+                <summary>Can I save my design?<span class="faq-mark" aria-hidden="true"><?= icon('chevron-down', 18) ?></span></summary>
+                <p>Press <strong>Save design</strong> in the studio. It&rsquo;s kept in
+                    <a href="<?= BASE_URL ?>/customer/my_designs.php">Saved Designs</a> to edit, reorder or delete.</p>
+            </details>
+
+            <details class="faq-item">
+                <summary>How do I track my order?<span class="faq-mark" aria-hidden="true"><?= icon('chevron-down', 18) ?></span></summary>
+                <p>Open <a href="<?= BASE_URL ?>/customer/orders.php">My Orders</a>. Each one moves from
+                    Pending to On Shipping to Completed.</p>
+            </details>
+
+            <details class="faq-item">
+                <summary>What payment methods are available?<span class="faq-mark" aria-hidden="true"><?= icon('chevron-down', 18) ?></span></summary>
+                <p>Cash on delivery, or manual bank transfer. Nothing is charged online.</p>
+            </details>
+
+            <details class="faq-item">
+                <summary>Can I cancel my order?<span class="faq-mark" aria-hidden="true"><?= icon('chevron-down', 18) ?></span></summary>
+                <p>Message us while it&rsquo;s still Pending and we&rsquo;ll cancel it for you. Once it ships
+                    we can no longer stop it.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- =========================== Contact ========================== -->
 <section class="section" id="contact">
-    <div class="container">
-        <div class="section-title">
-            <div class="eyebrow">Get In Touch</div>
-            <h2 class="mt-2">Contact Us</h2>
-            <p>Questions about an order, a custom request, or just feedback? We'd love to hear it.</p>
-        </div>
-        <div class="contact-form-wrap">
-            <?php if ($contactSuccess): ?>
-                <div class="alert alert-success"><?= e($contactSuccess) ?></div>
-            <?php endif; ?>
-            <?php if ($contactError): ?>
-                <div class="alert alert-danger"><?= e($contactError) ?></div>
-            <?php endif; ?>
-            <form method="post" action="<?= BASE_URL ?>/customer/contact_submit.php">
-                <?= csrf_field() ?>
-                <div class="row g-2">
-                    <div class="col-md-6">
-                        <label class="form-label">Name</label>
-                        <input type="text" name="name" class="form-control" value="<?= e($contactOld['name']) ?>" required>
+    <div class="container" data-reveal>
+        <div class="contact-grid">
+            <div>
+                <p class="eyebrow">Get in touch</p>
+                <h2 style="margin-top:var(--s-3)">Contact us</h2>
+                <p class="text-soft" style="margin-top:var(--s-3)">Questions about an order, a custom
+                    request, or just feedback? We read every message.</p>
+                <ul class="contact-points">
+                    <li><?= icon('mail', 19) ?><div><strong>hello@markme.test</strong><span>We reply within one working day</span></div></li>
+                    <li><?= icon('clock', 19) ?><div><strong>Mon &ndash; Sat, 9am &ndash; 6pm</strong><span>Philippine Standard Time</span></div></li>
+                    <li><?= icon('truck', 19) ?><div><strong>Nationwide delivery</strong><span>Cash on delivery available</span></div></li>
+                </ul>
+            </div>
+
+            <div class="card card-pad">
+                <?php if ($contactSuccess): ?>
+                    <div class="alert alert-success d-flex gap-2 align-items-start" role="status">
+                        <?= icon('check-circle', 20) ?><span><?= e($contactSuccess) ?></span>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-control" value="<?= e($contactOld['email']) ?>" required>
+                <?php endif; ?>
+                <?php if ($contactError): ?>
+                    <div class="alert alert-danger d-flex gap-2 align-items-start" role="alert">
+                        <?= icon('alert', 20) ?><span><?= e($contactError) ?></span>
                     </div>
-                    <div class="col-12">
-                        <label class="form-label">Message</label>
-                        <textarea name="message" class="form-control" rows="3" required><?= e($contactOld['message']) ?></textarea>
+                <?php endif; ?>
+
+                <form method="post" action="<?= BASE_URL ?>/customer/contact_submit.php">
+                    <?= csrf_field() ?>
+                    <div class="form-grid">
+                        <div>
+                            <label class="form-label" for="contact_name">Name</label>
+                            <input type="text" id="contact_name" name="name" class="form-control"
+                                   value="<?= e($contactOld['name']) ?>" required>
+                        </div>
+                        <div>
+                            <label class="form-label" for="contact_email">Email</label>
+                            <input type="email" id="contact_email" name="email" class="form-control"
+                                   value="<?= e($contactOld['email']) ?>" required>
+                        </div>
+                        <div class="span-2">
+                            <label class="form-label" for="contact_message">Message</label>
+                            <textarea id="contact_message" name="message" class="form-control" rows="7"
+                                      required><?= e($contactOld['message']) ?></textarea>
+                        </div>
                     </div>
-                </div>
-                <button type="submit" class="btn btn-primary w-100 mt-3">Send Message</button>
-            </form>
+                    <!-- Sized by its own padding, not the form width. -->
+                    <button type="submit" class="btn btn-primary" style="margin-top:var(--s-5)">
+                        <?= icon('mail', 16) ?> Send Message
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </section>
 
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/customer/footer.php'; ?>

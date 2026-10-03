@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/upload.php';
-require_admin();
+require_can('options.manage');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('/admin/designs.php');
